@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Appointment Details | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'patient:dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'patient:appointments' %}">My Appointments</a></li>
+      <li class="breadcrumb-item active">Appointment Details</li>
+    </ol>
+  </nav>
+
+  {% if messages %}
+    <div class="messages mb-4">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Appointment Information</h5>
+          <span class="badge {% if appointment.status == 'scheduled' %}bg-info{% elif appointment.status == 'confirmed' %}bg-success{% elif appointment.status == 'completed' %}bg-primary{% elif appointment.status == 'canceled' %}bg-danger{% else %}bg-secondary{% endif %}">
+            {{ appointment.get_status_display }}
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Appointment ID:</strong> #{{ appointment.id }}</p>
+              <p class="mb-1"><strong>Date:</strong> {{ appointment.appointment_date|date:"F j, Y" }}</p>
+              <p class="mb-1"><strong>Time:</strong> {{ appointment.appointment_time }}</p>
+              <p class="mb-0"><strong>Status:</strong> {{ appointment.get_status_display }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Doctor:</strong> Dr. {{ appointment.doctor.user.get_full_name }}</p>
+              <p class="mb-1"><strong>Specialization:</strong> {{ appointment.doctor.specialization }}</p>
+              <p class="mb-0"><strong>Patient:</strong> {{ appointment.patient.user.get_full_name }}</p>
+            </div>
+          </div>
+          
+          <hr>
+          
+          <h6>Reason for Visit</h6>
+          <p>{{ appointment.reason }}</p>
+          
+          {% if appointment.notes %}
+            <h6>Additional Notes</h6>
+            <p class="mb-0">{{ appointment.notes }}</p>
+          {% endif %}
+        </div>
+      </div>
+      
+      {% if appointment.status == 'scheduled' or appointment.status == 'confirmed' %}
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Actions</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <form method="post" action="{% url 'patient:appointment_cancel' appointment.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Are you sure you want to cancel this appointment?')">
+                    <i class="bi bi-x-circle me-2"></i> Cancel Appointment
+                  </button>
+                </form>
+              </div>
+              <div class="col-md-6">
+                <a href="{% url 'patient:appointment_reschedule' appointment.id %}" class="btn btn-primary w-100">
+                  <i class="bi bi-calendar-check me-2"></i> Reschedule
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h5 class="card-title mb-0">Doctor Information</h5>
+        </div>
+        <div class="card-body text-center">
+          <div class="avatar avatar-lg bg-primary text-white mx-auto mb-3">
+            {{ appointment.doctor.user.first_name|slice:":1" }}{{ appointment.doctor.user.last_name|slice:":1" }}
+          </div>
+          <h5>Dr. {{ appointment.doctor.user.get_full_name }}</h5>
+          <p class="text-muted mb-3">{{ appointment.doctor.specialization }}</p>
+          
+          <hr>
+          
+          <div class="text-start">
+            <p class="mb-2"><i class="bi bi-envelope me-2"></i> {{ appointment.doctor.user.email }}</p>
+            <p class="mb-0"><i class="bi bi-building me-2"></i> {{ appointment.doctor.department.name }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="card-title mb-0">Appointment Status</h5>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>Created</span>
+              <span class="badge bg-success rounded-pill">✓</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>Confirmed</span>
+              <span class="badge {% if appointment.status == 'confirmed' or appointment.status == 'completed' %}bg-success{% else %}bg-secondary{% endif %} rounded-pill">
+                {% if appointment.status == 'confirmed' or appointment.status == 'completed' %}✓{% else %}⋯{% endif %}
+              </span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>Completed</span>
+              <span class="badge {% if appointment.status == 'completed' %}bg-success{% else %}bg-secondary{% endif %} rounded-pill">
+                {% if appointment.status == 'completed' %}✓{% else %}⋯{% endif %}
+              </span>
+            </li>
+            {% if appointment.status == 'canceled' %}
+              <li class="list-group-item d-flex justify-content-between align-items-center list-group-item-danger">
+                <span>Canceled</span>
+                <span class="badge bg-danger rounded-pill">✕</span>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

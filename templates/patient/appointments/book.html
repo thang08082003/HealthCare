@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Book Appointment | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="h3 mb-4">Book an Appointment</h1>
+
+  {% if messages %}
+    <div class="messages mb-4">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      {% if setup_incomplete %}
+        <div class="alert alert-warning">
+          <h5 class="alert-heading">System Setup Incomplete</h5>
+          <p>
+            The appointment booking system is not fully set up yet. 
+            Doctor information is not available at this time. 
+            Please check back later or contact support for assistance.
+          </p>
+          <hr>
+          <a href="{% url 'patient:dashboard' %}" class="btn btn-primary">Return to Dashboard</a>
+        </div>
+      {% else %}
+        <form method="post" id="appointment-form">
+          {% csrf_token %}
+          
+          <!-- Doctor Selection -->
+          <div class="mb-4">
+            <h5 class="card-title">Select a Doctor</h5>
+            <div class="row">
+              {% for doctor in doctors %}
+              <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <div class="avatar bg-primary text-white me-3">
+                        {{ doctor.user.first_name|slice:":1" }}{{ doctor.user.last_name|slice:":1" }}
+                      </div>
+                      <div>
+                        <h5 class="mb-0">Dr. {{ doctor.user.get_full_name }}</h5>
+                        <p class="text-muted mb-0 small">{{ doctor.specialization }}</p>
+                      </div>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="doctor_id" id="doctor_{{ doctor.id }}" value="{{ doctor.id }}" required>
+                      <label class="form-check-label w-100" for="doctor_{{ doctor.id }}">
+                        Select Doctor
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% empty %}
+              <div class="col-12">
+                <div class="alert alert-warning">
+                  No doctors are currently available.
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Date and Time Selection -->
+          <div class="mb-4">
+            <h5 class="card-title">Select Date and Time</h5>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="appointment_date" class="form-label">Appointment Date</label>
+                <input type="date" class="form-control" id="appointment_date" name="appointment_date" 
+                       min="{{ min_date|date:'Y-m-d' }}" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="appointment_time" class="form-label">Appointment Time</label>
+                <!-- Changed from select to direct time input to ensure it's always available -->
+                <input type="time" class="form-control" id="appointment_time" name="appointment_time" required>
+                <small class="text-muted">Please select a time for your appointment</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reason and Notes -->
+          <div class="mb-4">
+            <h5 class="card-title">Visit Details</h5>
+            <div class="mb-3">
+              <label for="reason" class="form-label">Reason for Visit</label>
+              <textarea class="form-control" id="reason" name="reason" rows="2" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="notes" class="form-label">Additional Notes (optional)</label>
+              <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="{% url 'patient:dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Book Appointment</button>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+{% if not setup_incomplete %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('appointment_date');
+    const timeInput = document.getElementById('appointment_time');
+    
+    // Set a default time in business hours (e.g., 10:00 AM)
+    if (!timeInput.value) {
+      timeInput.value = '10:00';
+    }
+    
+    // Can add validation here if needed
+  });
+</script>
+{% endif %}
+{% endblock %}
+{% endblock %}

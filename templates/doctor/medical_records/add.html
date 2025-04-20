@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Add Medical Record | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'doctor:dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'doctor:patients' %}">Patients</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'doctor:patient_detail' patient.id %}">{{ patient.user.get_full_name }}</a></li>
+      <li class="breadcrumb-item active">Add Medical Record</li>
+    </ol>
+  </nav>
+
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="card-title mb-0">Add Medical Record for {{ patient.user.get_full_name }}</h5>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+              <label for="diagnosis" class="form-label">Diagnosis</label>
+              <textarea class="form-control" id="diagnosis" name="diagnosis" rows="3" required></textarea>
+            </div>
+            
+            <div class="mb-3">
+              <label for="treatment" class="form-label">Treatment</label>
+              <textarea class="form-control" id="treatment" name="treatment" rows="3" required></textarea>
+            </div>
+            
+            <div class="mb-3">
+              <label for="notes" class="form-label">Additional Notes</label>
+              <textarea class="form-control" id="notes" name="notes" rows="4"></textarea>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <a href="{% url 'doctor:patient_detail' patient.id %}" class="btn btn-outline-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">Save Record</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

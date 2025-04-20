@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Reschedule Appointment | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'patient:dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'patient:appointments' %}">My Appointments</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'patient:appointment_detail' appointment.id %}">Appointment Details</a></li>
+      <li class="breadcrumb-item active">Reschedule</li>
+    </ol>
+  </nav>
+
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="card-title mb-0">Reschedule Appointment</h5>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-info">
+            <h6 class="alert-heading">Current Appointment Details:</h6>
+            <p class="mb-0">
+              Dr. {{ appointment.doctor.user.get_full_name }} - 
+              {{ appointment.appointment_date|date:"F j, Y" }} at 
+              {{ appointment.appointment_time }}
+            </p>
+          </div>
+          
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="appointment_date" class="form-label">New Appointment Date</label>
+              <input type="date" class="form-control" id="appointment_date" name="appointment_date" 
+                     value="{{ appointment.appointment_date|date:'Y-m-d' }}" min="{{ min_date|date:'Y-m-d' }}" required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="appointment_time" class="form-label">New Appointment Time</label>
+              <input type="time" class="form-control" id="appointment_time" name="appointment_time" 
+                     value="{{ appointment.appointment_time|time:'H:i' }}" required>
+            </div>
+            
+            <div class="d-flex justify-content-end gap-2">
+              <a href="{% url 'patient:appointment_detail' appointment.id %}" class="btn btn-outline-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

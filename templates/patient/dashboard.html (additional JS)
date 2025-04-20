@@ -1,0 +1,24 @@
+{% block extra_js %}
+<script>
+  function refreshNotifications() {
+    window.location.reload();
+  }
+  
+  function checkForNewNotifications() {
+    fetch('/patient/check-notifications/')
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const currentCount = parseInt(document.getElementById('notification-count').innerText);
+          if (data.unread_count > currentCount) {
+            // Show notification indicator
+            document.getElementById('new-notification-alert').style.display = 'block';
+          }
+        }
+      });
+  }
+  
+  // Check for notifications every 30 seconds
+  setInterval(checkForNewNotifications, 30000);
+</script>
+{% endblock %}

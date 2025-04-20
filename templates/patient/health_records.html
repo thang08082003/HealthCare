@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Your Health Records | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'patient:dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Health Records</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Your Health Records</h1>
+  </div>
+
+  {% if messages %}
+    <div class="messages mb-4">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Vital Signs -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Vital Signs History</h5>
+    </div>
+    <div class="card-body p-0">
+      {% if vitals %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Blood Pressure</th>
+                <th>Pulse Rate</th>
+                <th>Temperature</th>
+                <th>Respiration</th>
+                <th>SpO2</th>
+                <th>Weight</th>
+                <th>Height</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for vital in vitals %}
+                <tr>
+                  <td>{{ vital.recorded_at|date:"M d, Y H:i" }}</td>
+                  <td>{{ vital.blood_pressure }}</td>
+                  <td>{{ vital.pulse_rate }} bpm</td>
+                  <td>{{ vital.temperature }}°{{ vital.temperature_unit }}</td>
+                  <td>{{ vital.respiration_rate }} bpm</td>
+                  <td>{{ vital.oxygen_saturation }}%</td>
+                  <td>{{ vital.weight }} {{ vital.weight_unit }}</td>
+                  <td>{{ vital.height }} {{ vital.height_unit }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-4">
+          <p class="text-muted">No vital signs recorded</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Lab Test Results -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Lab Test Results</h5>
+    </div>
+    <div class="card-body p-0">
+      {% if lab_tests %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Test Type</th>
+                <th>Date Requested</th>
+                <th>Status</th>
+                <th>Description</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for test in lab_tests %}
+                <tr>
+                  <td>
+                    {% if test.test_type %}
+                      {% if test.get_test_type_display %}
+                        {{ test.get_test_type_display }}
+                      {% else %}
+                        {{ test.test_type|title }}
+                      {% endif %}
+                    {% else %}
+                      Unknown Test
+                    {% endif %}
+                  </td>
+                  <td>{{ test.requested_date|date:"M d, Y" }}</td>
+                  <td>
+                    <span class="badge 
+                      {% if test.status == 'completed' %}bg-success
+                      {% elif test.status == 'requested' %}bg-warning
+                      {% elif test.status == 'in_progress' %}bg-primary
+                      {% else %}bg-secondary{% endif %}">
+                      {% if test.get_status_display %}
+                        {{ test.get_status_display }}
+                      {% else %}
+                        {{ test.status|title }}
+                      {% endif %}
+                    </span>
+                  </td>
+                  <td>{{ test.description|default:"-"|truncatechars:50 }}</td>
+                  <td>
+                    <a href="{% url 'patient:view_lab_result' test.id %}" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-eye"></i> View Details
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-4">
+          <p class="text-muted">No lab test results found</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

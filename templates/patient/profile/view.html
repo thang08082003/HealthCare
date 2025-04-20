@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Profile | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">My Profile</h1>
+    <a href="{% url 'patient:profile_edit' %}" class="btn btn-primary">
+      <i class="bi bi-pencil-square me-2"></i> Edit Profile
+    </a>
+  </div>
+
+  {% if messages %}
+    <div class="messages mb-4">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="row">
+    <!-- Personal Information -->
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="card-title mb-0">Personal Information</h5>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-sm-4 text-muted">Name:</div>
+            <div class="col-sm-8">{{ user.get_full_name }}</div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-sm-4 text-muted">Email:</div>
+            <div class="col-sm-8">{{ user.email }}</div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-sm-4 text-muted">Date of Birth:</div>
+            <div class="col-sm-8">{{ patient.date_of_birth|date:"F d, Y"|default:"Not provided" }}</div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-sm-4 text-muted">Gender:</div>
+            <div class="col-sm-8">{{ patient.get_gender_display|default:"Not provided" }}</div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-sm-4 text-muted">Phone:</div>
+            <div class="col-sm-8">{{ patient.phone|default:"Not provided" }}</div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 text-muted">Address:</div>
+            <div class="col-sm-8">{{ patient.address|default:"Not provided"|linebreaks }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medical Information -->
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="card-title mb-0">Medical Information</h5>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-sm-4 text-muted">Blood Type:</div>
+            <div class="col-sm-8">{{ patient.blood_type|default:"Not provided" }}</div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 text-muted">Allergies:</div>
+            <div class="col-sm-8">{{ patient.allergies|default:"None reported"|linebreaks }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Insurance Information -->
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Insurance Information</h5>
+          <a href="{% url 'patient:submit_insurance' %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Submit Insurance
+          </a>
+        </div>
+        <div class="card-body">
+          {% if patient.insurance_provider and patient.insurance_policy_number %}
+            <div class="row mb-3">
+              <div class="col-sm-4 text-muted">Provider:</div>
+              <div class="col-sm-8">{{ patient.insurance_provider }}</div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-sm-4 text-muted">Policy Number:</div>
+              <div class="col-sm-8">{{ patient.insurance_policy_number }}</div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 text-muted">Expiry Date:</div>
+              <div class="col-sm-8">{{ patient.insurance_expiry_date|date:"F d, Y" }}</div>
+            </div>
+          {% else %}
+            <div class="text-center py-3">
+              <p class="text-muted mb-0">No insurance information provided.</p>
+              <p class="text-muted mb-0">Please update your profile to add your insurance details.</p>
+              <a href="{% url 'patient:submit_insurance' %}" class="btn btn-primary mt-3">
+                <i class="bi bi-plus-circle me-2"></i>Add Insurance Information
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Settings -->
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="card-title mb-0">Account Settings</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <a href="{% url 'account_change_password' %}" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-key me-2"></i> Change Password
+              </a>
+            </div>
+            <div class="col-md-6 mb-3">
+              <a href="{% url 'account_email' %}" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-envelope me-2"></i> Manage Email
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

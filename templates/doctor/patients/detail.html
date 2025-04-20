@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Patient: {{ patient.user.get_full_name }} | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'doctor:dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'doctor:patients' %}">Patients</a></li>
+      <li class="breadcrumb-item active">{{ patient.user.get_full_name }}</li>
+    </ol>
+  </nav>
+  
+  {% if messages %}
+    <div class="messages mb-4">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Patient: {{ patient.user.get_full_name }}</h1>
+    <div>
+      <a href="{% url 'doctor:medical_record_add' patient.id %}" class="btn btn-primary">
+        <i class="bi bi-file-earmark-plus me-2"></i> Add Medical Record
+      </a>
+      <a href="{% url 'doctor:prescription_add' patient.id %}" class="btn btn-success ms-2">
+        <i class="bi bi-prescription2 me-2"></i> Create Prescription
+      </a>
+      <a href="{% url 'doctor:request_lab_test' patient.id %}" class="btn btn-info ms-2">
+        <i class="bi bi-flask me-2"></i> Request Lab Test
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-4">
+      <!-- Patient Information Card -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h5 class="card-title mb-0">Patient Information</h5>
+        </div>
+        <div class="card-body">
+          <div class="text-center mb-3">
+            <div class="avatar avatar-lg bg-primary text-white mx-auto mb-2">
+              {{ patient.user.first_name|slice:":1" }}{{ patient.user.last_name|slice:":1" }}
+            </div>
+            <h5 class="mb-0">{{ patient.user.get_full_name }}</h5>
+            <p class="text-muted">Patient #{{ patient.id }}</p>
+          </div>
+          
+          <hr>
+          
+          <div class="row mb-2">
+            <div class="col-5 text-muted">Date of Birth:</div>
+            <div class="col-7">{{ patient.date_of_birth|default:"Not specified" }}</div>
+          </div>
+          
+          <div class="row mb-2">
+            <div class="col-5 text-muted">Age:</div>
+            <div class="col-7">{{ patient.age|default:"Unknown" }}</div>
+          </div>
+          
+          <div class="row mb-2">
+            <div class="col-5 text-muted">Gender:</div>
+            <div class="col-7">{{ patient.get_gender_display|default:"Not specified" }}</div>
+          </div>
+          
+          <div class="row mb-2">
+            <div class="col-5 text-muted">Blood Type:</div>
+            <div class="col-7">{{ patient.blood_type|default:"Not specified" }}</div>
+          </div>
+          
+          <div class="row mb-4">
+            <div class="col-5 text-muted">Insurance:</div>
+            <div class="col-7">{{ patient.insurance_provider|default:"Not specified" }}</div>
+          </div>
+          
+          <div class="mb-3">
+            <h6>Medical Conditions</h6>
+            <p>{{ patient.medical_conditions|default:"None specified" }}</p>
+          </div>
+          
+          <div class="mb-0">
+            <h6>Allergies</h6>
+            <p class="mb-0">{{ patient.allergies|default:"None specified" }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Contact Information -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h5 class="card-title mb-0">Contact Information</h5>
+        </div>
+        <div class="card-body">
+          <div class="row mb-2">
+            <div class="col-3 text-muted">Email:</div>
+            <div class="col-9">{{ patient.user.email }}</div>
+          </div>  
+          <div class="row mb-0">
+            <div class="col-3 text-muted">Phone:</div>
+            <div class="col-9">{{ patient.emergency_contact_phone|default:"Not specified" }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-8">
+      <!-- Tabs for different sections -->
+      <ul class="nav nav-tabs mb-4" id="patientTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="medical-records-tab" data-bs-toggle="tab" data-bs-target="#medical-records" type="button" role="tab" aria-controls="medical-records" aria-selected="true">
+            Medical Records
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="appointments-tab" data-bs-toggle="tab" data-bs-target="#appointments" type="button" role="tab" aria-controls="appointments" aria-selected="false">
+            Appointments
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="prescriptions-tab" data-bs-toggle="tab" data-bs-target="#prescriptions" type="button" role="tab" aria-controls="prescriptions" aria-selected="false">
+            Prescriptions
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="lab-tests-tab" data-bs-toggle="tab" data-bs-target="#lab-tests" type="button" role="tab" aria-controls="lab-tests" aria-selected="false">
+            Lab Tests
+          </button>
+        </li>
+      </ul>
+      
+      <div class="tab-content" id="patientTabsContent">
+        <!-- Medical Records Tab -->
+        <div class="tab-pane fade show active" id="medical-records" role="tabpanel" aria-labelledby="medical-records-tab">
+          <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0">Medical Records</h5>
+              <a href="{% url 'doctor:medical_record_add' patient.id %}" class="btn btn-sm btn-primary">
+                <i class="bi bi-plus-lg me-1"></i> Add Record
+              </a>
+            </div>
+            <div class="card-body p-0">
+              {% if medical_records %}
+                <div class="accordion" id="medicalRecordsAccordion">
+                  {% for record in medical_records %}
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="heading-{{ record.id }}">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ record.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse-{{ record.id }}">
+                          <div class="d-flex w-100 justify-content-between">
+                            <span>{{ record.record_date|date:"F j, Y" }}</span>
+                            <small class="text-muted">Dr. {{ record.doctor.user.get_full_name }}</small>
+                          </div>
+                        </button>
+                      </h2>
+                      <div id="collapse-{{ record.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading-{{ record.id }}" data-bs-parent="#medicalRecordsAccordion">
+                        <div class="accordion-body">
+                          <div class="mb-3">
+                            <h6 class="mb-1">Diagnosis</h6>
+                            <p>{{ record.diagnosis }}</p>
+                          </div>
+                          
+                          <div class="mb-3">
+                            <h6 class="mb-1">Treatment</h6>
+                            <p>{{ record.treatment }}</p>
+                          </div>
+                          
+                          {% if record.notes %}
+                            <div class="mb-0">
+                              <h6 class="mb-1">Notes</h6>
+                              <p class="mb-0">{{ record.notes }}</p>
+                            </div>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="text-center py-5">
+                  <p class="text-muted mb-0">No medical records found for this patient.</p>
+                  <a href="{% url 'doctor:medical_record_add' patient.id %}" class="btn btn-primary mt-3">
+                    Create First Medical Record
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Appointments Tab -->
+        <div class="tab-pane fade" id="appointments" role="tabpanel" aria-labelledby="appointments-tab">
+          <div class="card shadow-sm">
+            <div class="card-header bg-white">
+              <h5 class="card-title mb-0">Appointment History</h5>
+            </div>
+            <div class="card-body p-0">
+              {% if appointments %}
+                <div class="table-responsive">
+                  <table class="table mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Date & Time</th>
+                        <th>Doctor</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for appointment in appointments %}
+                        <tr>
+                          <td>{{ appointment.appointment_date|date:"M d, Y" }} at {{ appointment.appointment_time }}</td>
+                          <td>Dr. {{ appointment.doctor.user.get_full_name }}</td>
+                          <td>{{ appointment.reason|truncatechars:40 }}</td>
+                          <td>
+                            <span class="badge {% if appointment.status == 'scheduled' %}bg-warning{% elif appointment.status == 'confirmed' %}bg-success{% elif appointment.status == 'completed' %}bg-primary{% elif appointment.status == 'canceled' %}bg-danger{% else %}bg-secondary{% endif %}">
+                              {{ appointment.get_status_display }}
+                            </span>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <div class="text-center py-5">
+                  <p class="text-muted mb-0">No appointments found for this patient.</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Prescriptions Tab -->
+        <div class="tab-pane fade" id="prescriptions" role="tabpanel" aria-labelledby="prescriptions-tab">
+          <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0">Prescriptions</h5>
+              <a href="{% url 'doctor:prescription_add' patient.id %}" class="btn btn-sm btn-success">
+                <i class="bi bi-plus-lg me-1"></i> Create Prescription
+              </a>
+            </div>
+            <div class="card-body p-0">
+              {% if prescriptions %}
+                <div class="table-responsive">
+                  <table class="table mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Date</th>
+                        <th>Doctor</th>
+                        <th>Details</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for prescription in prescriptions %}
+                        <tr>
+                          <td>{{ prescription.date_prescribed|date:"M d, Y" }}</td>
+                          <td>Dr. {{ prescription.doctor.user.get_full_name }}</td>
+                          <td>{{ prescription.notes|linebreaksbr|truncatechars:50 }}</td>
+                          <td>
+                            <span class="badge {% if prescription.status == 'pending' %}bg-warning{% elif prescription.status == 'dispensed' %}bg-success{% elif prescription.status == 'expired' %}bg-danger{% else %}bg-secondary{% endif %}">
+                              {{ prescription.get_status_display }}
+                            </span>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <div class="text-center py-5">
+                  <p class="text-muted mb-0">No prescriptions found for this patient.</p>
+                  <a href="{% url 'doctor:prescription_add' patient.id %}" class="btn btn-success mt-3">
+                    Create First Prescription
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Lab Tests Tab -->
+        <div class="tab-pane fade" id="lab-tests" role="tabpanel" aria-labelledby="lab-tests-tab">
+          <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0">Laboratory Tests</h5>
+              <a href="{% url 'doctor:request_lab_test' patient.id %}" class="btn btn-sm btn-info">
+                <i class="bi bi-plus-lg me-1"></i> Request New Test
+              </a>
+            </div>
+            <div class="card-body">
+              <!-- Test request tracking section -->
+              <div class="mb-4">
+                <h6 class="mb-3">Recent Test Requests</h6>
+                <div class="table-responsive">
+                  <table class="table table-bordered">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Date Requested</th>
+                        <th>Test Type</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for test in lab_tests %}
+                      <tr>
+                        <td>{{ test.requested_date|date:"M d, Y" }}</td>
+                        <td>{{ test.get_test_type_display }}</td>
+                        <td>
+                          <span class="badge 
+                          {% if test.status == 'requested' %}bg-warning
+                          {% elif test.status == 'scheduled' %}bg-info
+                          {% elif test.status == 'in_progress' %}bg-primary
+                          {% elif test.status == 'completed' %}bg-success
+                          {% else %}bg-secondary{% endif %}">
+                          {{ test.get_status_display }}
+                          </span>
+                        </td>
+                        <td>
+                          <a href="{% url 'doctor:lab_test_detail' patient.id test.id %}" class="btn btn-sm btn-outline-info">View Details</a>
+                        </td>
+                      </tr>
+                      {% empty %}
+                      <tr>
+                        <td colspan="4" class="text-center">No lab tests requested yet</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              {% if not lab_tests %}
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                No lab tests have been requested for this patient yet.
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Vital Signs Section -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0">Recent Vital Signs</h5>
+              {% if vitals_history %}
+                <small class="text-muted">Last updated: {{ vitals_history.0.recorded_at|date:"M d, Y H:i" }}</small>
+              {% endif %}
+            </div>
+            <div class="card-body">
+              {% if vitals_history %}
+                {% with latest=vitals_history.0 %}
+                <div class="row">
+                  <div class="col-md-4 mb-3">
+                    <div class="card">
+                      <div class="card-body p-3 text-center">
+                        <h6 class="text-muted mb-1">Temperature</h6>
+                        <h3>{{ latest.temperature }}°C</h3>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <div class="card">
+                      <div class="card-body p-3 text-center">
+                        <h6 class="text-muted mb-1">Blood Pressure</h6>
+                        <h3>{{ latest.blood_pressure }} mmHg</h3>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <div class="card">
+                      <div class="card-body p-3 text-center">
+                        <h6 class="text-muted mb-1">Heart Rate</h6>
+                        <h3>{{ latest.heart_rate }} bpm</h3>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {% if latest.notes %}
+                <div class="mt-3">
+                  <h6>Notes:</h6>
+                  <p class="mb-0">{{ latest.notes }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="mt-3 text-muted">
+                  <p class="mb-0">Recorded by: {{ latest.recorded_by.get_full_name }}</p>
+                </div>
+                {% endwith %}
+              {% else %}
+                <div class="text-center py-4">
+                  <p class="mb-0">No vital signs recorded yet.</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

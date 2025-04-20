@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Welcome to Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4">Welcome to Healthcare System</h1>
+        <p class="lead">Your trusted partner in healthcare management</p>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body text-center p-5">
+                    {% if user.is_authenticated %}
+                        <h2 class="h3 mb-4">Hello, {{ user.get_full_name|default:user.email }}</h2>
+                        
+                        {% if user.role == 'patient' %}
+                            <p>Access your patient dashboard to manage appointments, view records, and more.</p>
+                            <a href="{% url 'patient:dashboard' %}" class="btn btn-primary btn-lg">Patient Dashboard</a>
+                        {% elif user.role == 'doctor' %}
+                            <p>Access your doctor dashboard to manage patients and appointments.</p>
+                            <a href="#" class="btn btn-primary btn-lg">Doctor Dashboard</a>
+                        {% elif user.role == 'admin' %}
+                            <p>Access the administration panel to manage the system.</p>
+                            <a href="{% url 'admin:index' %}" class="btn btn-primary btn-lg">Admin Dashboard</a>
+                        {% elif user.role == 'pharmacist' or user.role == 'pharmacy' %}
+                            <p>Access the pharmacy dashboard to manage prescriptions and medications.</p>
+                            <a href="{% url 'pharmacy:dashboard' %}" class="btn btn-primary btn-lg">Pharmacy Dashboard</a>
+                        {% elif user.role == 'insurance' or user.role == 'insurer' %}
+                            <p>Access the insurance dashboard to manage policies, claims and verifications.</p>
+                            <a href="{% url 'insurance:dashboard' %}" class="btn btn-primary btn-lg">Insurance Dashboard</a>
+                        {% else %}
+                            <p>Welcome to the Healthcare System.</p>
+                            <a href="{% url 'admin:index' %}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+                        {% endif %}
+                    {% else %}
+                        <h2 class="h3 mb-4">Get Started</h2>
+                        <div class="d-grid gap-3 col-md-6 mx-auto">
+                            <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg">Sign In</a>
+                            <a href="{% url 'account_signup' %}" class="btn btn-outline-primary btn-lg">Create Account</a>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{% url 'patient:dashboard' %}" class="btn btn-link">Patient Dashboard</a>
+                            <a href="{% url 'pharmacy:dashboard' %}" class="btn btn-link">Pharmacy</a>
+                            <a href="{% url 'admin:index' %}" class="btn btn-link">Admin</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

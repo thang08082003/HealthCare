@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Prescription Details | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'patient:dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'patient:prescriptions' %}">Prescriptions</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Prescription #{{ prescription.id }}</li>
+    </ol>
+  </nav>
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Prescription Details</h1>
+    <div>
+      <a href="#" class="btn btn-outline-secondary">
+        <i class="bi bi-file-earmark-pdf"></i> Download PDF
+      </a>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Prescription Information</h5>
+          <span class="badge {% if prescription.status == 'pending' %}bg-warning{% elif prescription.status == 'verified' %}bg-primary{% elif prescription.status == 'dispensed' %}bg-success{% elif prescription.status == 'expired' %}bg-danger{% else %}bg-secondary{% endif %}">
+            {{ prescription.get_status_display }}
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Prescription ID:</strong> #{{ prescription.id }}</p>
+              <p class="mb-1"><strong>Date Prescribed:</strong> {{ prescription.date_prescribed|date:"F d, Y" }}</p>
+              <p class="mb-1"><strong>Doctor:</strong> Dr. {{ prescription.doctor.user.get_full_name }}</p>
+              <p class="mb-0"><strong>Department:</strong> {{ prescription.doctor.department.name }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Status:</strong> {{ prescription.get_status_display }}</p>
+              {% if prescription.expiry_date %}
+                <p class="mb-1"><strong>Expires On:</strong> {{ prescription.expiry_date|date:"F d, Y" }}</p>
+              {% endif %}
+              {% if prescription.dispensed_date %}
+                <p class="mb-1"><strong>Dispensed On:</strong> {{ prescription.dispensed_date|date:"F d, Y" }}</p>
+              {% endif %}
+              <p class="mb-0"><strong>Patient:</strong> {{ prescription.patient.user.get_full_name }}</p>
+            </div>
+          </div>
+          
+          {% if prescription.notes %}
+          <div class="alert alert-info">
+            <h6 class="alert-heading mb-1">Notes</h6>
+            <p class="mb-0">{{ prescription.notes }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Medications</h5>
+        </div>
+        <div class="card-body p-0">
+          {% if prescription.prescriptionitem_set.exists %}
+            <div class="table-responsive">
+              <table class="table mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Medication</th>
+                    <th>Dosage</th>
+                    <th>Frequency</th>
+                    <th>Duration</th>
+                    <th>Instructions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in prescription.prescriptionitem_set.all %}
+                    <tr>
+                      <td>{{ item.medication.name }}</td>
+                      <td>{{ item.dosage }}</td>
+                      <td>{{ item.frequency }}</td>
+                      <td>{{ item.duration }}</td>
+                      <td>{{ item.instructions }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <p class="mb-0">No medications listed in this prescription</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Prescription Status</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item px-0">
+              <div class="d-flex justify-content-between align-items-center">
+                <span>Prescribed</span>
+                <i class="bi bi-check-circle-fill text-success"></i>
+              </div>
+              <small class="text-muted">{{ prescription.date_prescribed|date:"M d, Y" }}</small>
+            </li>
+            <li class="list-group-item px-0">
+              <div class="d-flex justify-content-between align-items-center">
+                <span>Verified</span>
+                {% if prescription.status == 'verified' or prescription.status == 'dispensed' %}
+                  <i class="bi bi-check-circle-fill text-success"></i>
+                {% else %}
+                  <i class="bi bi-circle text-secondary"></i>
+                {% endif %}
+              </div>
+              {% if prescription.verification_date %}
+                <small class="text-muted">{{ prescription.verification_date|date:"M d, Y" }}</small>
+              {% endif %}
+            </li>
+            <li class="list-group-item px-0">
+              <div class="d-flex justify-content-between align-items-center">
+                <span>Dispensed</span>
+                {% if prescription.status == 'dispensed' %}
+                  <i class="bi bi-check-circle-fill text-success"></i>
+                {% else %}
+                  <i class="bi bi-circle text-secondary"></i>
+                {% endif %}
+              </div>
+              {% if prescription.dispensed_date %}
+                <small class="text-muted">{{ prescription.dispensed_date|date:"M d, Y" }}</small>
+              {% endif %}
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Doctor Information</h5>
+        </div>
+        <div class="card-body text-center">
+          <div class="mb-3">
+            <div class="avatar avatar-md bg-primary mx-auto mb-2">
+              {{ prescription.doctor.user.first_name|slice:":1" }}{{ prescription.doctor.user.last_name|slice:":1" }}
+            </div>
+            <h5 class="mb-1">Dr. {{ prescription.doctor.user.get_full_name }}</h5>
+            <p class="mb-0 text-muted">{{ prescription.doctor.specialization }}</p>
+          </div>
+          <hr>
+          <p class="mb-1"><i class="bi bi-building me-2"></i> {{ prescription.doctor.department.name }}</p>
+          <p class="mb-0"><i class="bi bi-envelope me-2"></i> {{ prescription.doctor.user.email }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

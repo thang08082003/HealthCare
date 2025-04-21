@@ -10,8 +10,7 @@ gunicorn>=20.1.0
 whitenoise>=6.2.0
 psycopg2-binary>=2.9.3
 python-dateutil>=2.8.2
-
-# Optional packages for enhanced functionality
-xlsxwriter>=3.0.3  # For Excel export
-reportlab>=3.6.11  # For PDF generation
-twilio>=7.0.0  # For SMS notifications
+drf-yasg>=1.21.7
+xlsxwriter>=3.0.3  
+reportlab>=3.6.11 
+twilio>=7.0.0  

@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'rest_framework',
+    'drf_yasg',  # Add drf-yasg for API documentation
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -193,6 +194,21 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+}
+
+# DRF-YASG Settings (Swagger API documentation)
+SWAGGER_SETTINGS = {
+    'DEFAULT_INFO': 'healthcare.urls.api_info',
+    'SECURITY_DEFINITIONS': {
+        'Basic': {
+            'type': 'basic'
+        },
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
 }
 
 # For debugging

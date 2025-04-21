@@ -3,16 +3,16 @@ from users.models import User
 from patient.models import Patient, MedicalRecord
 from doctor.models import Doctor, Specialization
 from appointment.models import Appointment
-from prescription.models import Prescription, PrescriptionItem, Medication
+from prescription.models import Prescription, PrescriptionItem, Medication  # Added Medication import
 from laboratory.models import LabTest, TestResult
 from insurance.models import InsuranceProvider, InsurancePolicy, InsuranceClaim
-from billing.models import Invoice, Payment
+from billing.models import Bill, Payment  # Changed Invoice to Bill
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'role', 'phone_number']
-        read_only_fields = ['email', 'role']
+        fields = ['id', 'email', 'first_name', 'last_name', 'role', 'date_joined']
+        read_only_fields = ['date_joined']
 
 
 class PatientSerializer(serializers.ModelSerializer):
@@ -21,10 +21,10 @@ class PatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
         fields = [
-            'id', 'user', 'user_details', 'medical_record_number', 
+            'id', 'user', 'user_details', 
             'emergency_contact_name', 'emergency_contact_phone',
-            'blood_type', 'gender', 'weight', 'height', 
-            'allergies', 'chronic_diseases'
+            'blood_type', 'gender', 
+            'allergies', 
         ]
 
 
@@ -122,16 +122,16 @@ class TestResultSerializer(serializers.ModelSerializer):
 
 class LabTestSerializer(serializers.ModelSerializer):
     patient_name = serializers.CharField(source='patient.user.get_full_name', read_only=True)
-    doctor_name = serializers.CharField(source='doctor.user.get_full_name', read_only=True)
+    doctor_name = serializers.CharField(source='requested_by.user.get_full_name', read_only=True)  # Changed source from doctor to requested_by
     test_results = TestResultSerializer(many=True, read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     
     class Meta:
         model = LabTest
         fields = [
-            'id', 'patient', 'patient_name', 'doctor', 'doctor_name',
+            'id', 'patient', 'patient_name', 'requested_by', 'doctor_name',  # Changed doctor to requested_by
             'test_name', 'test_date', 'status', 'status_display', 
-            'notes', 'report_file', 'test_results'
+            'notes', 'results', 'test_results'  # Changed report_file to results to match model
         ]
 
 
@@ -168,7 +168,19 @@ class InsuranceClaimSerializer(serializers.ModelSerializer):
             'id', 'claim_number', 'patient', 'patient_name', 
             'insurance_policy', 'policy_number', 'provider_name',
             'service_date', 'claim_date', 'diagnosis_codes',
-            'procedure_codes', 'claim_amount', 'approved_amount',
+            'service_codes', 'claim_amount', 'approved_amount',
             'approval_status', 'notes', 'processed_date', 'processed_by'
         ]
         read_only_fields = ['claim_number', 'processed_date', 'processed_by']
+
+
+class BillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bill
+        fields = ['id', 'invoice_number', 'patient', 'amount', 'due_date', 'status', 'created_date']
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ['id', 'bill', 'amount', 'payment_date', 'payment_method', 'status']

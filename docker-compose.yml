@@ -30,6 +30,11 @@ services:
       - .:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/mediafiles
+    environment:
+      - IN_DOCKER=True
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@example.com
+      - DJANGO_SUPERUSER_PASSWORD=adminpassword
     command: >
       bash -c "echo 'Waiting for database...' &&
               sleep 15 &&
@@ -37,7 +42,7 @@ services:
               mkdir -p /app/staticfiles &&
               mkdir -p /app/mediafiles &&
               echo 'Setting up database...' &&
-              python manage.py migrate --fake users.0001_initial &&
+              python manage.py migrate users 0001_initial --fake &&
               python manage.py migrate &&
               echo 'Creating superuser...' &&
               python create_superuser.py &&
@@ -49,6 +54,20 @@ services:
       - "8080:8000"
     networks:
       - healthcare_network
+
+  # Temporarily commenting out the reporting service 
+  # until the implementation is available
+  # reporting-service:
+  #   build: ./reporting
+  #   restart: always
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     - DATABASE_URL=postgres://postgres:postgres@db:5432/healthcare_db
+  #   networks:
+  #     - healthcare_network
+  #   ports:
+  #     - "8081:8000"
 
 networks:
   healthcare_network:

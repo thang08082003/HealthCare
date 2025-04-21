@@ -3,8 +3,8 @@ from .models import Patient, MedicalRecord
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
-    list_display = ('user', 'gender', 'insurance_provider')
-    list_filter = ('gender', 'insurance_provider')
+    list_display = ('user', 'gender', 'blood_type')
+    list_filter = ('gender', 'blood_type')
     search_fields = ('user__email', 'user__first_name', 'user__last_name')
     
     fieldsets = (
@@ -12,17 +12,13 @@ class PatientAdmin(admin.ModelAdmin):
             'fields': ('user',)
         }),
         ('Personal Details', {
-            'fields': ('gender', 'date_of_birth', 'blood_type')
+            'fields': ('gender', 'date_of_birth', 'blood_type', 'height')
         }),
         ('Medical Information', {
-            'fields': ('allergies', 'medical_conditions')
+            'fields': ('allergies', 'chronic_diseases')
         }),
         ('Emergency Contact', {
             'fields': ('emergency_contact_name', 'emergency_contact_phone')
-        }),
-        ('Insurance', {
-            'fields': ('insurance_provider', 'insurance_policy_number'),
-            'description': 'Insurance details for the patient'
         }),
     )
 
